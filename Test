@@ -12,6 +12,8 @@ local Window = Fluent:CreateWindow({
 	MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
 })
 
+local defaultFistCooldown = 0.53
+
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Tabs = {
 	Main = Window:AddTab({ Title = "Combat", Icon = "" }),
@@ -28,18 +30,18 @@ do
 		Duration = 5 -- Set to nil to make the notification not disappear
 	})
 
-	local Toggle = Tabs.Main:AddToggle("Overpowered Fists", {Title = "Overpowered Fists", Default = false })
+	local Toggle = Tabs.Main:AddToggle("Fast Fists", {Title = "Fast Fists", Default = false })
 
 	Toggle:OnChanged(function()
-		local isToggled = Options["Overpowered Fists"].Value
+		local isToggled = Options["Fast Fists"].Value
 		
 		if (isToggled) then
 			local meleeConfig = game:GetService("ReplicatedStorage").MeleeConfigs
 			local config = require(meleeConfig)
 			
 			if (config) then
-				config.Fists.Damage = 100
-				print("Modified Damage.")
+				config.Fists.CoolDown = 0
+				config.Fists.MaxCombo = 9999
 			end
 		end
 	end)
