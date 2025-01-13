@@ -13,6 +13,7 @@ local Window = Fluent:CreateWindow({
 })
 
 local defaultFistCooldown = 0.53
+local defaultFistMaxCombo = 2
 
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Tabs = {
@@ -42,6 +43,14 @@ do
 			if (config) then
 				config.Fists.CoolDown = 0
 				config.Fists.MaxCombo = 9999
+			end
+		else
+			local meleeConfig = game:GetService("ReplicatedStorage").MeleeConfigs
+			local config = require(meleeConfig)
+
+			if (config) then
+				config.Fists.CoolDown = defaultFistCooldown
+				config.Fists.MaxCombo = defaultFistMaxCombo
 			end
 		end
 	end)
