@@ -3,7 +3,7 @@ local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/d
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 local Window = Fluent:CreateWindow({
-	Title = "SentenceX",
+	Title = "Syntax",
 	SubTitle = "by Xk3d",
 	TabWidth = 160,
 	Size = UDim2.fromOffset(580, 460),
@@ -12,13 +12,10 @@ local Window = Fluent:CreateWindow({
 	MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
 })
 
-local defaultFistCooldown = 0.53
-local defaultFistMaxCombo = 2
-local defaultSlowOnAttack = true
-
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Tabs = {
 	Main = Window:AddTab({ Title = "Main", Icon = "" }),
+	Exploit = Window:AddTab({ Title = "Exploit", Icon = "" }),
 	Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
@@ -26,28 +23,36 @@ local Options = Fluent.Options
 
 do
 	Fluent:Notify({
-		Title = "SentenceX",
+		Title = Window.Title,
 		Content = "Loaded script succesfully!",
 		SubContent = "Nothing else...", -- Optional
 		Duration = 5 -- Set to nil to make the notification not disappear
 	})
 
-	local Toggle = Tabs.Main:AddToggle("Fast Fists", {Title = "Fast Fists", Default = false })
-
-	Toggle:OnChanged(function()
-		local isToggled = Options["Fast Fists"].Value
-		
-		if (isToggled) then
-			local meleeConfig = game:GetService("ReplicatedStorage").MeleeConfigs
-			local config = require(meleeConfig)
-			
-			if (config) then
-				config.Fists.CoolDown = 0
-				config.Fists.MaxCombo = 9999
-				config.Fists.SlowOnAttaack = false
-			end
+	Tabs.Exploit:AddButton({
+		Title = "DupeItem",
+		Description = "Duplicates the current item equipped.",
+		Callback = function()
+			Window:Dialog({
+				Title = "Confirmation",
+				Content = "Are you sure that you want to duplicate this item?",
+				Buttons = {
+					{
+						Title = "Confirm",
+						Callback = function()
+							print("Confirmed the dialog.")
+						end
+					},
+					{
+						Title = "Cancel",
+						Callback = function()
+							print("Cancelled the dialog.")
+						end
+					}
+				}
+			})
 		end
-	end)
+	})
 
 	--Options.MyToggle:SetValue(false)
 end
