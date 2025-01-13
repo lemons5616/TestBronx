@@ -14,7 +14,7 @@ local Window = Fluent:CreateWindow({
 
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Tabs = {
-	Main = Window:AddTab({ Title = "Main", Icon = "" }),
+	Main = Window:AddTab({ Title = "Combat", Icon = "" }),
 	Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
@@ -24,15 +24,23 @@ do
 	Fluent:Notify({
 		Title = "SentenceX",
 		Content = "Loaded script succesfully!",
-		SubContent = "SubContent", -- Optional
+		SubContent = "Nothing else...", -- Optional
 		Duration = 5 -- Set to nil to make the notification not disappear
 	})
 
-	local Toggle = Tabs.Main:AddToggle("Overpowered Fists", {Title = "Toggle", Default = false })
+	local Toggle = Tabs.Main:AddToggle("Overpowered Fists", {Title = "Overpowered Fists", Default = false })
 
 	Toggle:OnChanged(function()
 		local isToggled = Options["Overpowered Fists"].Value
-		print(isToggled)
+		
+		if (isToggled) then
+			local meleeConfig = game:GetService("ReplicatedStorage").MeleeConfigs
+			local config = require(meleeConfig)
+			
+			if (config) then
+				config.Fists.Damagge = 100
+			end
+		end
 	end)
 
 	--Options.MyToggle:SetValue(false)
