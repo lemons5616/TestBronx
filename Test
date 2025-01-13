@@ -38,7 +38,8 @@ do
 			local config = require(meleeConfig)
 			
 			if (config) then
-				config.Fists.Damagge = 100
+				config.Fists.Damage = 100
+				print("Modified Damage.")
 			end
 		end
 	end)
