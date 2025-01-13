@@ -55,6 +55,18 @@ do
 			})
 		end
 	})
+	
+	local RemoveShadowsToggle = Tabs.Main:AddToggle("RemoveShadows", {Title = "RemoveShadows", Default = false })
+
+	RemoveShadowsToggle:OnChanged(function()
+		local toggleValue = Options.RemoveShadows.Value
+		
+		if (toggleValue) then
+			game.Lighting.GlobalShadows = false
+		else
+			game.Lighting.GlobalShadows = true
+		end
+	end)
 
 	--Options.MyToggle:SetValue(false)
 end
