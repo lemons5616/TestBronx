@@ -71,6 +71,28 @@ do
 			})
 		end
 	})
+	
+	-- Game Category
+	
+	local LightingTechnologyDropdown = Tabs.Main:AddDropdown("LightingTechnology", {
+		Title = "Lighting Technology",
+		Values = {"Voxel", "Compatibility", "ShadowMap", "Future"},
+		Multi = false,
+		Default = Lighting.Technology.Name, -- Default value based on the current Lighting technology
+	})
+
+	LightingTechnologyDropdown:SetValue(Lighting.Technology.Name) -- Set initial dropdown value
+
+	LightingTechnologyDropdown:OnChanged(function(value)
+		-- Map the selected string value to the corresponding Enum
+		local newTechnology = Enum.Technology[value]
+		if newTechnology then
+			Lighting.Technology = newTechnology
+			print("Lighting Technology changed to:", value)
+		else
+			print("Invalid Lighting Technology selected!")
+		end
+	end)
 
 	local FullBrightToggle = Tabs.Game:AddToggle("FullBright", {Title = "FullBright", Default = false })
 
@@ -91,7 +113,7 @@ do
 		end
 	end)
 	
-	local BrightnessSlider = Tabs.Main:AddSlider("Brightness", {
+	local BrightnessSlider = Tabs.Game:AddSlider("Brightness", {
 		Title = "Brightness",
 		Description = "Sets the game lighting brightness to the set value.",
 		Default = 2,
@@ -103,7 +125,7 @@ do
 		end
 	})
 
-	local TimeOfDaySlider = Tabs.Main:AddSlider("TimeOfDay", {
+	local TimeOfDaySlider = Tabs.Game:AddSlider("TimeOfDay", {
 		Title = "TimeOfDay",
 		Description = "Sets the game time of day to the set value.",
 		Default = 2,
