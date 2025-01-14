@@ -263,7 +263,7 @@ do
 			-- Teleport the player to the random safe's position
 			Character:SetPrimaryPartCFrame(randomSafe.ChestClicker.CFrame)
 			
-			wait(0.1)
+			wait(0.25)
 
 			-- Send the current item to the safe
 			local argsTrue = {
