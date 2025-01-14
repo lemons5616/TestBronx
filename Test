@@ -276,6 +276,8 @@ do
 				[4] = randomSafe -- Send to the safe
 			}
 			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrue))
+			
+			wait(0.5)
 
 			-- Send the current item to the safe
 			local argsFalse = {
