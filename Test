@@ -209,41 +209,30 @@ do
 			end
 		end
 	end)
-	
 
-	-- Predefined Teleport Location (Guns Shop 1)
+	-- Predefined Teleport Locations
 	local teleportLocations = {
-		{Name = "Guns Shop 1", Position = CFrame.new(
-			92968.8047, 122097.961, 17023.4434, -- Position (x, y, z)
-			0.0234310497, -7.02721579e-08, -0.999725461, -- CFrame rotation (matrix)
-			-9.69914726e-09, 1, -7.05187801e-08, -- CFrame rotation (matrix)
-			0.999725461, 1.13488134e-08, 0.0234310497  -- CFrame rotation (matrix)
-			)}
+		-- Guns Shop 1 (with position and rotation removed)
+		{Name = "Guns Shop 1", Position = CFrame.new(92968.8047, 122097.961, 17023.4434)},
+
+		-- Guns Shop 2
+		{Name = "Guns Shop 2", Position = CFrame.new(66202, 123616, 5750)}
 	}
 
-	-- Teleport Dropdown inside the Teleport Tab
-	local TeleportDropdown = Tabs.Teleport:AddDropdown("TeleportDropdown", {
-		Title = "Select Teleport Location",
-		Values = {"Guns Shop 1"}, -- Corresponds to the new location
-		Multi = false,
-		Default = 1, -- Default to "Guns Shop 1"
-	})
-
-	-- Handle Teleportation when the dropdown value changes
-	TeleportDropdown:OnChanged(function(value)
-		-- Find the selected location's Position based on the name
-		for _, location in pairs(teleportLocations) do
-			if location.Name == value then
-				-- Move the player's character to the selected location
+	-- Create a button for each teleport location
+	for _, location in pairs(teleportLocations) do
+		Tabs.Teleport:AddButton({
+			Title = "Teleport to " .. location.Name,
+			Description = "Click to teleport to " .. location.Name,
+			Callback = function()
+				-- Teleport the player to the selected location's Position
 				local Character = game:GetService("Players").LocalPlayer.Character
 				local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 				HumanoidRootPart.CFrame = location.Position
-				print("Teleported to:", value)
-				break
+				print("Teleported to:", location.Name)
 			end
-		end
-	end)
-
+		})
+	end
 
 	--Options.MyToggle:SetValue(false)
 end
