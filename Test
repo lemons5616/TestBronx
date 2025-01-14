@@ -231,6 +231,22 @@ do
 			return
 		end
 		
+		-- Check if the tool name is "Phone" or "Fist"
+		if tool.Name == "Phone" or tool.Name == "Fist" then
+			Window:Dialog({
+				Title = "Tool Detected",
+				Content = "You cannot clone this item: " .. tool.Name .. ". Choose another one.",
+				Buttons = {
+					{
+						Title = "Confirm",
+						Callback = function()
+						end
+					}
+				}
+			})
+			return
+		end
+		
 		-- Save the current position
 		local originalPosition = Character.PrimaryPart and Character.PrimaryPart.CFrame or nil
 
