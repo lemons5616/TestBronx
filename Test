@@ -271,8 +271,14 @@ do
 			}
 
 			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(args))
+			
+			local clone = Lighting:WaitForChild(tool.Name)
+			if (clone) then
+				print(clone.Name.." Test")
+			end
 
 			wait(2)
+			
 
 		end
 	end
