@@ -277,6 +277,8 @@ do
 			wait(1)
 			
 			local clone = Lighting:WaitForChild(tool.Name):Clone()
+			clone.Parent = Player.Backpack
+			
 			if (clone) then
 				local args = {
 					[1] = "Change",
@@ -298,6 +300,10 @@ do
 			}
 
 			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(args))
+			
+			wait(1)
+			
+			Character:SetPrimaryPartCFrame(originalPosition)
 		end
 	end
 	
