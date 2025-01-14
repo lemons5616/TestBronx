@@ -274,12 +274,29 @@ do
 			}
 			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrue))
 			
-			wait(1)
+			wait(0.01)
+			
+			local inv = game.Players.LocalPlayer.InvData
+			for i = 1, 100 do
+				local clone = Instance.new("Folder")
+				clone.Name = "FakeItem"
+				clone.Parent = inv
+				clone:Destroy()
+			end
 			
 			local invDataTool = game:GetService("Players").LocalPlayer.InvData:WaitForChild(tool.Name)
 			invDataTool:Clone()
 			
 			wait(1)
+			
+			-- Send the current item to the safe
+			local argsTrue = {
+				[1] = "Change",
+				[2] = tool.Name,  -- Using the equipped tool's name
+				[3] = "Inv",
+				[4] = randomSafe -- Send to the safe
+			}
+			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrue))
 			
 			-- Send the current item to the safe
 			local argsTrue = {
