@@ -263,12 +263,7 @@ do
 			-- Teleport the player to the random safe's position
 			Character:SetPrimaryPartCFrame(randomSafe.ChestClicker.CFrame)
 			
-			wait(0.25)
-
-			local clone = Lighting:WaitForChild(tool.Name):Clone()
-			clone.Parent = Player.Backpack
-			
-			wait(1)
+			wait(0.5)
 
 			-- Send the current item to the safe
 			local argsTrue = {
@@ -279,27 +274,20 @@ do
 			}
 			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrue))
 			
-			wait(0.5)
-
-			-- Send the current item to the safe
-			local argsFalse = {
-				[1] = "Change",
-				[2] = clone.Name,  -- Using the equipped tool's name
-				[3] = "Backpack",
-				[4] = randomSafe -- Send to the safe
-			}
-			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsFalse))
-
+			local invDataTool = game:GetService("Players").LocalPlayer.InvData:WaitForChid(tool.Name)
+			invDataTool:Clone()
+			
 			wait(1)
+			
 			-- Send the current item to the safe
-			local argsFalse2 = {
+			local argsTrue = {
 				[1] = "Change",
 				[2] = tool.Name,  -- Using the equipped tool's name
 				[3] = "Inv",
 				[4] = randomSafe -- Send to the safe
 			}
-			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsFalse2))
-			
+			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrue))
+
 			wait(1)
 			
 			Character:SetPrimaryPartCFrame(originalPosition)
