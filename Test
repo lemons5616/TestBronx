@@ -215,10 +215,49 @@ do
 	end
 	
 	function dupeItem()
-		local CurrentTool = Humanoid.Parent:FindFirstChildWhichIsA("Tool")
+		local tool = Character:FindFirstChildOfClass("Tool")
+		if not tool then
+			Window:Dialog({
+				Title = "Error",
+				Content = "You have no item equipped, please equip one to duplicate it.",
+				Buttons = {
+					{
+						Title = "Confirm",
+						Callback = function()
+						end
+					}
+				}
+			})
+			return
+		end
 		
-		if (CurrentTool) then
-			
+		-- Save the current position
+		local originalPosition = Character.PrimaryPart and Character.PrimaryPart.CFrame or nil
+
+		-- Get the safes
+		local safesContainer = workspace:WaitForChild("1# Map"):WaitForChild("2 Crosswalks"):WaitForChild("Safes")
+		local safes = safesContainer:GetChildren()
+
+		-- Ensure there are safes available
+		if #safes > 0 then
+			-- Choose a random safe
+			local randomSafe = safes[math.random(1, #safes)]
+
+			Player.Character.Humanoid:UnequipTools()
+			-- Teleport the player to the random safe's position
+			Character:SetPrimaryPartCFrame(randomSafe.ChestClicker.CFrame)
+
+			local args = {
+				[1] = "Change",
+				[2] = tool.Name,
+				[3] = "Backpack",
+				[4] = randomSafe
+			}
+
+			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(args))
+
+			wait(2)
+
 		end
 	end
 	
@@ -230,7 +269,7 @@ do
 		Callback = function()
 			Window:Dialog({
 				Title = "Confirmation",
-				Content = "Are you sure to dupe this item?",
+				Content = "Are you sure to duplicate this item?",
 				Buttons = {
 					{
 						Title = "Confirm",
