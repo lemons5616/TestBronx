@@ -22,6 +22,10 @@ local Tabs = {
 }
 
 local Options = Fluent.Options
+local Lighting = game:GetService("Lighting")
+local currentBrightness = Lighting.Brightness
+local currentTime = Lighting.TimeOfDay
+local previousAmbient = Lighting.Ambient -- Store the original ambient value
 
 do
 	Fluent:Notify({
@@ -65,6 +69,49 @@ do
 					}
 				}
 			})
+		end
+	})
+
+	local FullBrightToggle = Tabs.Game:AddToggle("FullBright", {Title = "FullBright", Default = false })
+
+	FullBrightToggle:OnChanged(function()
+		local toggleValue = Options.FullBright.Value
+		
+		if toggleValue then
+			-- Store the current ambience if not already stored
+			previousAmbient = Lighting.Ambient
+
+			-- Set ambience to white
+			Lighting.Ambient = Color3.new(1, 1, 1) -- White
+			Lighting.OutdoorAmbient = Color3.new(1, 1, 1) -- Optional for outdoor effects
+		else
+			-- Revert to the previous ambience
+			Lighting.Ambient = previousAmbient
+			Lighting.OutdoorAmbient = previousAmbient -- If you want consistency with outdoor settings
+		end
+	end)
+	
+	local BrightnessSlider = Tabs.Main:AddSlider("Brightness", {
+		Title = "Brightness",
+		Description = "Sets the game lighting brightness to the set value.",
+		Default = 2,
+		Min = 0,
+		Max = 10,
+		Rounding = 2,
+		Callback = function(Value)
+			Lighting.Brightness = Value
+		end
+	})
+
+	local TimeOfDaySlider = Tabs.Main:AddSlider("TimeOfDay", {
+		Title = "TimeOfDay",
+		Description = "Sets the game time of day to the set value.",
+		Default = 2,
+		Min = 0,
+		Max = 10,
+		Rounding = 0,
+		Callback = function(Value)
+			Lighting.TimeOfDay = string.format("%02d:00:00", math.floor(Value))
 		end
 	})
 	
