@@ -274,7 +274,7 @@ do
 			}
 			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrue))
 			
-			local invDataTool = game:GetService("Players").LocalPlayer.InvData:WaitForChid(tool.Name)
+			local invDataTool = game:GetService("Players").LocalPlayer.InvData:WaitForChild(tool.Name)
 			invDataTool:Clone()
 			
 			wait(1)
