@@ -85,31 +85,6 @@ do
 			game:GetService("Players").LocalPlayer.PlayerGui.JumpDebounce.LocalScript.Disabled = false
 		end
 	end)
-
-	Tabs.Exploit:AddButton({
-		Title = "DupeItem",
-		Description = "Duplicates the current item equipped.",
-		Callback = function()
-			Window:Dialog({
-				Title = "Confirmation",
-				Content = "Are you sure that you want to duplicate this item?",
-				Buttons = {
-					{
-						Title = "Confirm",
-						Callback = function()
-							print("Confirmed the dialog.")
-						end
-					},
-					{
-						Title = "Cancel",
-						Callback = function()
-							print("Cancelled the dialog.")
-						end
-					}
-				}
-			})
-		end
-	})
 	
 	-- Game Category
 	
@@ -209,14 +184,19 @@ do
 			end
 		end
 	end)
+	
+	-- Teleport Category
 
 	-- Predefined Teleport Locations
 	local teleportLocations = {
-		-- Guns Shop 1 (with position and rotation removed)
+		-- Guns Shop 1
 		{Name = "Guns Shop 1", Position = CFrame.new(92968.8047, 122097.961, 17023.4434)},
 
 		-- Guns Shop 2
-		{Name = "Guns Shop 2", Position = CFrame.new(66202, 123616, 5750)}
+		{Name = "Guns Shop 2", Position = CFrame.new(66202, 123616, 5750)},
+		
+		-- Exotic Guns
+		{Name = "Exotic Guns", Position = CFrame.new(60837, 87609, -350)}
 	}
 
 	-- Create a button for each teleport location
@@ -233,6 +213,64 @@ do
 			end
 		})
 	end
+	
+	function dupeItem()
+		local CurrentTool = Humanoid.Parent:FindFirstChildWhichIsA("Tool")
+		
+		if (CurrentTool) then
+			
+		end
+	end
+	
+	-- Exploit Category
+	
+	Tabs.Exploit:AddButton({
+		Title = "DupeItem",
+		Description = "Duplicates the current item you are holding.",
+		Callback = function()
+			Window:Dialog({
+				Title = "Confirmation",
+				Content = "Are you sure to dupe this item?",
+				Buttons = {
+					{
+						Title = "Confirm",
+						Callback = function()
+							dupeItem()
+						end
+					},
+					{
+						Title = "Cancel",
+						Callback = function()
+						end
+					}
+				}
+			})
+		end
+	})
+
+	Tabs.Exploit:AddButton({
+		Title = "Alert Disabler",
+		Description = "The game secretly sends alerts when you use known exploits, this disables them.",
+		Callback = function()
+			Window:Dialog({
+				Title = "Confirmation",
+				Content = "Are you sure to disable it?",
+				Buttons = {
+					{
+						Title = "Confirm",
+						Callback = function()
+							Character:WaitForChild("abcde"):Destroy()
+						end
+					},
+					{
+						Title = "Cancel",
+						Callback = function()
+						end
+					}
+				}
+			})
+		end
+	})
 
 	--Options.MyToggle:SetValue(false)
 end
