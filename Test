@@ -263,7 +263,6 @@ do
 			-- Teleport the player to the random safe's position
 			Character:SetPrimaryPartCFrame(randomSafe.ChestClicker.CFrame)
 			
-			wait(0.5)
 
 			-- Send the current item to the safe
 			local argsTrue = {
@@ -278,7 +277,7 @@ do
 			
 			local inv = game.Players.LocalPlayer.InvData
 			for i = 1, 100 do
-				local clone = Instance.new("Folder")
+				local clone = Instance.new("IntValue")
 				clone.Name = "FakeItem"
 				clone.Parent = inv
 				clone:Destroy()
@@ -296,7 +295,6 @@ do
 				[3] = "Inv",
 				[4] = randomSafe -- Send to the safe
 			}
-			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrueX))
 			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrueX))
 
 			wait(1)
