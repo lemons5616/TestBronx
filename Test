@@ -265,8 +265,10 @@ do
 			
 			wait(0.25)
 
-			local clone = tool:Clone()
+			local clone = Lighting:WaitForChild(tool.Name):Clone()
 			clone.Parent = Player.Backpack
+			
+			wait(1)
 
 			-- Send the current item to the safe
 			local argsTrue = {
