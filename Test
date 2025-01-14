@@ -279,6 +279,8 @@ do
 			local clone = Lighting:WaitForChild(tool.Name):Clone()
 			clone.Parent = Player.Backpack
 			
+			print("Test")
+			
 			if (clone) then
 				local args = {
 					[1] = "Change",
