@@ -290,22 +290,14 @@ do
 			wait(1)
 			
 			-- Send the current item to the safe
-			local argsTrue = {
+			local argsTrueX = {
 				[1] = "Change",
 				[2] = tool.Name,  -- Using the equipped tool's name
 				[3] = "Inv",
 				[4] = randomSafe -- Send to the safe
 			}
-			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrue))
-			
-			-- Send the current item to the safe
-			local argsTrue = {
-				[1] = "Change",
-				[2] = tool.Name,  -- Using the equipped tool's name
-				[3] = "Inv",
-				[4] = randomSafe -- Send to the safe
-			}
-			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrue))
+			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrueX))
+			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrueX))
 
 			wait(1)
 			
