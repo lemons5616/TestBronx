@@ -265,43 +265,36 @@ do
 			
 			wait(0.25)
 
-			local args = {
-				[1] = "Change",
-				[2] = tool.Name,
-				[3] = "Backpack",
-				[4] = randomSafe
-			}
-
-			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(args))
-			
-			wait(1)
-			
-			local clone = Lighting:WaitForChild(tool.Name):Clone()
+			local clone = tool:Clone()
 			clone.Parent = Player.Backpack
-			
-			print("Test")
-			
-			if (clone) then
-				local args = {
-					[1] = "Change",
-					[2] = clone.Name,
-					[3] = "Backpack",
-					[4] = randomSafe
-				}
 
-				game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(args))
-			end
-
-			wait(2)
-			
-			local args = {
+			-- Send the current item to the safe
+			local argsTrue = {
 				[1] = "Change",
-				[2] = tool.Name,
-				[3] = "Inv",
-				[4] = randomSafe
+				[2] = tool.Name,  -- Using the equipped tool's name
+				[3] = "Backpack",
+				[4] = randomSafe -- Send to the safe
 			}
+			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrue))
 
-			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(args))
+			-- Send the current item to the safe
+			local argsFalse = {
+				[1] = "Change",
+				[2] = clone.Name,  -- Using the equipped tool's name
+				[3] = "Backpack",
+				[4] = randomSafe -- Send to the safe
+			}
+			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsFalse))
+
+			wait(1)
+			-- Send the current item to the safe
+			local argsFalse2 = {
+				[1] = "Change",
+				[2] = tool.Name,  -- Using the equipped tool's name
+				[3] = "Inv",
+				[4] = randomSafe -- Send to the safe
+			}
+			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsFalse2))
 			
 			wait(1)
 			
