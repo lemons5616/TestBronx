@@ -17,14 +17,13 @@ local Tabs = {
 	Main = Window:AddTab({ Title = "Main", Icon = "" }),
 	Player = Window:AddTab({ Title = "Player", Icon = "" }),
 	Exploit = Window:AddTab({ Title = "Exploit", Icon = "" }),
+	Teleport = Window:AddTab({ Title = "Teleport", Icon = "" }),
 	Game = Window:AddTab({ Title = "Game", Icon = "" }),
 	Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
 local Options = Fluent.Options
 local Lighting = game:GetService("Lighting")
-local currentBrightness = Lighting.Brightness
-local currentTime = Lighting.TimeOfDay
 local previousAmbient = Lighting.Ambient -- Store the original ambient value
 
 do
@@ -34,6 +33,46 @@ do
 		SubContent = "Nothing else...", -- Optional
 		Duration = 5 -- Set to nil to make the notification not disappear
 	})
+	
+	-- Player Category
+	
+	-- Player Category
+	local Player = game:GetService("Players").LocalPlayer
+	local Character = Player.Character or Player.CharacterAdded:Wait()
+	local Humanoid = Character:WaitForChild("Humanoid")
+
+	-- Jump Height Slider
+	local JumpHeightSlider = Tabs.Player:AddSlider("JumpHeight", {
+		Title = "Jump Height",
+		Description = "Adjust the jump height of your character.",
+		Default = Humanoid.JumpPower, -- Default to the player's current jump power
+		Min = 10,
+		Max = 200,
+		Rounding = 0,
+		Callback = function(Value)
+			-- Update Jump Power when the slider is changed
+			Humanoid.JumpPower = Value
+		end
+	})
+
+	JumpHeightSlider:SetValue(Humanoid.JumpPower) -- Set initial value to current jump power
+
+	-- Walk Speed Slider
+	local WalkSpeedSlider = Tabs.Player:AddSlider("WalkSpeed", {
+		Title = "Walk Speed",
+		Description = "Adjust the walk speed of your character.",
+		Default = Humanoid.WalkSpeed, -- Default to the player's current walk speed
+		Min = 8, -- Default Roblox walk speed
+		Max = 100,
+		Rounding = 0,
+		Callback = function(Value)
+			-- Update Walk Speed when the slider is changed
+			Humanoid.WalkSpeed = Value
+		end
+	})
+
+	WalkSpeedSlider:SetValue(Humanoid.WalkSpeed) -- Set initial value to current walk speed
+
 	
 	local NoJumpCoolDownToggle = Tabs.Player:AddToggle("NoJumpCoolDown", {Title = "NoJumpCoolDown", Default = false })
 
@@ -74,7 +113,7 @@ do
 	
 	-- Game Category
 	
-	local LightingTechnologyDropdown = Tabs.Main:AddDropdown("LightingTechnology", {
+	local LightingTechnologyDropdown = Tabs.Game:AddDropdown("LightingTechnology", {
 		Title = "Lighting Technology",
 		Values = {"Voxel", "Compatibility", "ShadowMap", "Future"},
 		Multi = false,
@@ -170,6 +209,41 @@ do
 			end
 		end
 	end)
+	
+
+	-- Predefined Teleport Location (Guns Shop 1)
+	local teleportLocations = {
+		{Name = "Guns Shop 1", Position = CFrame.new(
+			92968.8047, 122097.961, 17023.4434, -- Position (x, y, z)
+			0.0234310497, -7.02721579e-08, -0.999725461, -- CFrame rotation (matrix)
+			-9.69914726e-09, 1, -7.05187801e-08, -- CFrame rotation (matrix)
+			0.999725461, 1.13488134e-08, 0.0234310497  -- CFrame rotation (matrix)
+			)}
+	}
+
+	-- Teleport Dropdown inside the Teleport Tab
+	local TeleportDropdown = Tabs.Teleport:AddDropdown("TeleportDropdown", {
+		Title = "Select Teleport Location",
+		Values = {"Guns Shop 1"}, -- Corresponds to the new location
+		Multi = false,
+		Default = 1, -- Default to "Guns Shop 1"
+	})
+
+	-- Handle Teleportation when the dropdown value changes
+	TeleportDropdown:OnChanged(function(value)
+		-- Find the selected location's Position based on the name
+		for _, location in pairs(teleportLocations) do
+			if location.Name == value then
+				-- Move the player's character to the selected location
+				local Character = game:GetService("Players").LocalPlayer.Character
+				local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+				HumanoidRootPart.CFrame = location.Position
+				print("Teleported to:", value)
+				break
+			end
+		end
+	end)
+
 
 	--Options.MyToggle:SetValue(false)
 end
