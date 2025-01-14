@@ -262,6 +262,8 @@ do
 			Player.Character.Humanoid:UnequipTools()
 			-- Teleport the player to the random safe's position
 			Character:SetPrimaryPartCFrame(randomSafe.ChestClicker.CFrame)
+			
+			wait(0.25)
 
 			local args = {
 				[1] = "Change",
@@ -272,14 +274,30 @@ do
 
 			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(args))
 			
-			local clone = Lighting:WaitForChild(tool.Name)
+			wait(1)
+			
+			local clone = Lighting:WaitForChild(tool.Name):Clone()
 			if (clone) then
-				print(clone.Name.." Test")
+				local args = {
+					[1] = "Change",
+					[2] = clone.Name,
+					[3] = "Backpack",
+					[4] = randomSafe
+				}
+
+				game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(args))
 			end
 
 			wait(2)
 			
+			local args = {
+				[1] = "Change",
+				[2] = tool.Name,
+				[3] = "Inv",
+				[4] = randomSafe
+			}
 
+			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(args))
 		end
 	end
 	
