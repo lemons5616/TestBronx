@@ -1,641 +1,526 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("Tha Xploit", "Sentinel")
-local Combat = Window:NewTab("Combat")
-local Player = Window:NewTab("Player")
-local Utility = Window:NewTab("Utility")
-local AutoFarm = Window:NewTab("AutoFarm")
-local Exploit = Window:NewTab("Exploit")
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
-local GunModSection = Combat:NewSection("Gun Mods")
-local EnviromentSection = Combat:NewSection("Environment")
-local PlayerSection = Player:NewSection("Character Modifications")
-local UtilitySection = Utility:NewSection("Utility")
-local PurchasingSection = AutoFarm:NewSection("Purchasing")
-local MoneySection = AutoFarm:NewSection("Money")
-local ExploitSection = Exploit:NewSection("Useful Exploits")
+local Window = Fluent:CreateWindow({
+	Title = "Syntax",
+	SubTitle = "by Xk3d",
+	TabWidth = 160,
+	Size = UDim2.fromOffset(580, 460),
+	Acrylic = false, -- The blur may be detectable, setting this to false disables blur entirely
+	Theme = "Dark",
+	MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
+})
 
---TELEPORTING
--- Define teleport locations
-local teleportLocations = {
-	{name = "Guns Shop 1", position = Vector3.new(-1006.58356, 254.004608, -817.199097)},
-	{name = "Guns Shop 2", position = Vector3.new(-129.877258, 282.965973, -796.901062)},
-	{name = "Guns Shop 3 (Exotic Guns)", position = Vector3.new(60837.8633, 87609.1328, -352.99649, -0.00811773632, 4.7308145e-08, 0.999967039, -6.28109453e-10, 1, -4.73148027e-08, -0.999967039, -1.01217779e-09, -0.00811773632)},
-	{name = "Hotel Hall", position = Vector3.new(-24.5520306, 416.43338, -454.355347)},
-	{name = "Laundry", position = Vector3.new(-982.799316, 252.941132, -682.534668)},
-	{name = "Rice Purchaser", position = Vector3.new(81065.0703, 133132.984, 167.565689)},
-	{name = "Exotic Dealer", position = Vector3.new(-1521.92236, 273.35968, -988.202942)},
-	{name = "Bank", position = Vector3.new(-130.178146, 283.632904, -1200.91504)},
-	{name = "Weed Purchaser", position = Vector3.new(-630.154541, 252.798019, -730.857178)},
+--Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
+local Tabs = {
+	Main = Window:AddTab({ Title = "Main", Icon = "" }),
+	Player = Window:AddTab({ Title = "Player", Icon = "" }),
+	Exploit = Window:AddTab({ Title = "Exploit", Icon = "" }),
+	Teleport = Window:AddTab({ Title = "Teleport", Icon = "" }),
+	Game = Window:AddTab({ Title = "Game", Icon = "" }),
+	Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
--- BUYING
-local ricePurchaseCount = 0  -- Keeps track of rice purchases
-local grapePurchaseCount = 0
-local seedsPurchaseCount = 0
-local riceBuyLocation = CFrame.new(51373.3594, 21680.2383, 5842.92969, 0.986435831, -1.52454032e-08, -0.164147288, 1.49616994e-08, 1, -2.96470071e-09, 0.164147288, 4.68564743e-10, 0.986435831)
-local buyRicePrompt = workspace:WaitForChild("GUNS"):WaitForChild("RiceBag"):WaitForChild("Over"):WaitForChild("Sign"):WaitForChild("BuyPrompt")
-local seedsBuyLocation = CFrame.new(-1539.0968, 282.439026, -991.320923, 0.0827591121, 3.31818448e-08, -0.996569574, 3.25935581e-08, 1, 3.60027634e-08, 0.996569574, -3.5461305e-08, 0.0827591121)
-local buySeedsPrompt = workspace:WaitForChild("GUNS"):WaitForChild("Seeds"):WaitForChild("Bag"):WaitForChild("BuyPrompt")
-local ricePrice = 3500
-local grapePrice = 500
-local seedsPrice = 1000
-local minBuyValue = 1
-local maxBuyValue = 50
+local Options = Fluent.Options
+local Lighting = game:GetService("Lighting")
+local previousAmbient = Lighting.Ambient -- Store the original ambient value
 
-local function createWarningGui(message)
-	local screenGui = Instance.new("ScreenGui")
-	screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui") -- Add GUI to player's screen
+do
+	Fluent:Notify({
+		Title = Window.Title,
+		Content = "Loaded script succesfully!",
+		SubContent = "Nothing else...", -- Optional
+		Duration = 5 -- Set to nil to make the notification not disappear
+	})
+	
+	-- Player Category
+	
+	-- Player Category
+	local Player = game:GetService("Players").LocalPlayer
+	local Character = Player.Character or Player.CharacterAdded:Wait()
+	local Humanoid = Character:WaitForChild("Humanoid")
 
-	local textLabel = Instance.new("TextLabel")
-	textLabel.Size = UDim2.new(0.3, 0, 0.05, 0)
-	textLabel.Position = UDim2.new(0.35, 0, 0.9, 0)
-	textLabel.BackgroundTransparency = 0.3
-	textLabel.BackgroundColor3 = Color3.new(1, 0, 0) -- Red background for warning
-	textLabel.Text = message
-	textLabel.TextScaled = true
-	textLabel.TextColor3 = Color3.new(255, 255, 255)
-	textLabel.Parent = screenGui
-
-	-- Remove the GUI after 1 second
-	delay(2, function()
-		screenGui:Destroy()
-	end)
-end
-
-GunModSection:NewButton("Infinite Ammo", "Lets the player have unlimited ammo.", function()
-	local function findModuleScriptInCharacter(character, moduleName)
-		for _, descendant in ipairs(character:GetDescendants()) do
-			if descendant:IsA("ModuleScript") and descendant.Name == moduleName then
-				return descendant
-			end
+	-- Jump Height Slider
+	local JumpHeightSlider = Tabs.Player:AddSlider("JumpHeight", {
+		Title = "Jump Height",
+		Description = "Adjust the jump height of your character.",
+		Default = Humanoid.JumpPower, -- Default to the player's current jump power
+		Min = 10,
+		Max = 200,
+		Rounding = 0,
+		Callback = function(Value)
+			-- Update Jump Power when the slider is changed
+			Humanoid.JumpPower = Value
 		end
-		return nil  -- Return nil if not found
-	end
+	})
 
-	local Players = game:GetService("Players")
-	local Workspace = game:GetService("Workspace")
+	JumpHeightSlider:SetValue(Humanoid.JumpPower) -- Set initial value to current jump power
 
-	local localPlayer = Players.LocalPlayer  -- Get the local player
-	if localPlayer then
-		local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()  -- Wait if character not yet loaded
-		local settingModule = findModuleScriptInCharacter(character, "Setting")
-		local gun = settingModule  -- Assigning the found moduleScript to 'gun'
-
-		if settingModule then
-			local settings = require(gun)  -- Require the module script
-			settings.LimitedAmmoEnabled = false
-			settings.AmmoPerMag = 9000000000
-			settings.Ammo = 9000000000
-			settings.MaxAmmo = 9000000000
-		else
-			warn("'Setting' ModuleScript not found in the character.")
+	-- Walk Speed Slider
+	local WalkSpeedSlider = Tabs.Player:AddSlider("WalkSpeed", {
+		Title = "Walk Speed",
+		Description = "Adjust the walk speed of your character.",
+		Default = Humanoid.WalkSpeed, -- Default to the player's current walk speed
+		Min = 8, -- Default Roblox walk speed
+		Max = 100,
+		Rounding = 0,
+		Callback = function(Value)
+			-- Update Walk Speed when the slider is changed
+			Humanoid.WalkSpeed = Value
 		end
-	else
-		warn("LocalPlayer not found.")
-	end
-end)
+	})
 
-EnviromentSection:NewButton("FastFists", "No delay when using fists.", function()
-	-- Script to find LocalPlayer's 'Setting' ModuleScript in Workspace
+	WalkSpeedSlider:SetValue(Humanoid.WalkSpeed) -- Set initial value to current walk speed
+	
+	-- Add Fly Modes Dropdown
+	local FlyModesDropdown = Tabs.Main:AddDropdown("FlyModes", {
+		Title = "Fly Modes",
+		Values = {"Disabled", "Normal Fly", "CFrame Fly"},
+		Multi = false,
+		Default = "Disabled",
+	})
 
-	-- Define a function to find a module script by name in a given model
-	local function findModuleScriptInCharacter(character, moduleName)
-		for _, descendant in ipairs(character:GetDescendants()) do
-			if descendant:IsA("ModuleScript") and descendant.Name == moduleName then
-				return descendant
-			end
-		end
-		return nil  -- Return nil if not found
-	end
+	-- Variables to manage fly modes and speed
+	local flyEnabled = false
+	local cframeFlyEnabled = false
+	local flySpeed = 50
 
-	-- Main execution
-	local Players = game:GetService("Players")
-	local Workspace = game:GetService("Workspace")
-
-	local localPlayer = Players.LocalPlayer  -- Get the local player
-	if localPlayer then
-		local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()  -- Wait if character not yet loaded
-		local settingModule = findModuleScriptInCharacter(character, "Melee_Settings")
-		local punch = settingModule  -- Assigning the found moduleScript to 'gun'
-
-		if settingModule then
-			local punchSettings = require(punch)
-			punchSettings.AttackCooldown = 1 / 100
-		else
-			warn("'Setting' ModuleScript not found in the character.")
-		end
-	else
-		warn("LocalPlayer not found.")
-	end
-end)
-
-GunModSection:NewButton("Rapid Fire", "Lets the player fire gun rapidly.", function()
-	local function findModuleScriptInCharacter(character, moduleName)
-		for _, descendant in ipairs(character:GetDescendants()) do
-			if descendant:IsA("ModuleScript") and descendant.Name == moduleName then
-				return descendant
-			end
-		end
-		return nil  -- Return nil if not found
-	end
-
-	-- Main execution
-	local Players = game:GetService("Players")
-	local Workspace = game:GetService("Workspace")
-
-	local localPlayer = Players.LocalPlayer  -- Get the local player
-	if localPlayer then
-		local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()  -- Wait if character not yet loaded
-		local settingModule = findModuleScriptInCharacter(character, "Setting")
-		local gun = settingModule  -- Assigning the found moduleScript to 'gun'
-
-		if settingModule then
-			local settings = require(gun)  -- Require the module script
-			settings.FireRate = 1 / 1000000
-			settings.Auto = true
-		else
-			warn("'Setting' ModuleScript not found in the character.")
-		end
-	else
-		warn("LocalPlayer not found.")
-	end
-end)
-
-GunModSection:NewButton("No Recoil", "No recoil on the gun you are equipping.", function()
-	local function findModuleScriptInCharacter(character, moduleName)
-		for _, descendant in ipairs(character:GetDescendants()) do
-			if descendant:IsA("ModuleScript") and descendant.Name == moduleName then
-				return descendant
-			end
-		end
-		return nil  -- Return nil if not found
-	end
-
-	-- Main execution
-	local Players = game:GetService("Players")
-	local Workspace = game:GetService("Workspace")
-
-	local localPlayer = Players.LocalPlayer  -- Get the local player
-	if localPlayer then
-		local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()  -- Wait if character not yet loaded
-		local settingModule = findModuleScriptInCharacter(character, "Setting")
-		local gun = settingModule  -- Assigning the found moduleScript to 'gun'
-
-		if settingModule then
-			local settings = require(gun)  -- Require the module script
-			settings.Recoil = 0
-		else
-			warn("'Setting' ModuleScript not found in the character.")
-		end
-	else
-		warn("LocalPlayer not found.")
-	end
-end)
-
-GunModSection:NewButton("Infinite Damage", "Sets the damage of the gun infinite (May not work.)", function()
-	local function findModuleScriptInCharacter(character, moduleName)
-		for _, descendant in ipairs(character:GetDescendants()) do
-			if descendant:IsA("ModuleScript") and descendant.Name == moduleName then
-				return descendant
-			end
-		end
-		return nil  -- Return nil if not found
-	end
-
-	-- Main execution
-	local Players = game:GetService("Players")
-	local Workspace = game:GetService("Workspace")
-
-	local localPlayer = Players.LocalPlayer  -- Get the local player
-	if localPlayer then
-		local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()  -- Wait if character not yet loaded
-		local settingModule = findModuleScriptInCharacter(character, "Setting")
-		local gun = settingModule  -- Assigning the found moduleScript to 'gun'
-
-		if settingModule then
-			local settings = require(gun)  -- Require the module script
-			settings.BaseDamage = math.huge
-		else
-			warn("'Setting' ModuleScript not found in the character.")
-		end
-	else
-		warn("LocalPlayer not found.")
-	end
-end)
-
-PlayerSection:NewButton("Instant Interact", "No waiting when interacting with prompts.", function()
-	for _, prompt in pairs(game:GetDescendants()) do
-		if prompt:IsA("ProximityPrompt") then
-			prompt.HoldDuration = 0
-		end
-	end
-
-
-	game.DescendantAdded:Connect(function(descendant)
-		if descendant:IsA("ProximityPrompt") then
-			descendant.HoldDuration = 0
-		end
-	end)
-end)
-
-
-local flyEnabled = false
-local cframeFlyEnabled = false
-local flySpeed = 50
-
-local function enableNormalFly()
-	local player = game.Players.LocalPlayer
-	local character = player.Character or player.CharacterAdded:Wait()
-	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-
-	if not humanoidRootPart then
-		warn("HumanoidRootPart not found!")
-		return
-	end
-
-	local bodyVelocity = Instance.new("BodyVelocity", humanoidRootPart)
-	bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-	bodyVelocity.Velocity = Vector3.zero
-
-	local bodyGyro = Instance.new("BodyGyro", humanoidRootPart)
-	bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-
-	game:GetService("RunService").RenderStepped:Connect(function()
-		if flyEnabled then
-			local camera = workspace.CurrentCamera
-			local moveDirection = Vector3.new(0, 0, 0)
-
-			if game.UserInputService:IsKeyDown(Enum.KeyCode.W) then
-				moveDirection += camera.CFrame.LookVector
-			end
-			if game.UserInputService:IsKeyDown(Enum.KeyCode.S) then
-				moveDirection -= camera.CFrame.LookVector
-			end
-			if game.UserInputService:IsKeyDown(Enum.KeyCode.A) then
-				moveDirection -= camera.CFrame.RightVector
-			end
-			if game.UserInputService:IsKeyDown(Enum.KeyCode.D) then
-				moveDirection += camera.CFrame.RightVector
-			end
-			if game.UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-				moveDirection += Vector3.new(0, 1, 0)
-			end
-			if game.UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
-				moveDirection -= Vector3.new(0, 1, 0)
-			end
-
-			bodyVelocity.Velocity = moveDirection.Unit * flySpeed
-			bodyGyro.CFrame = camera.CFrame
-		else
-			bodyVelocity:Destroy()
-			bodyGyro:Destroy()
-		end
-	end)
-end
-
-local function enableCFrameFly()
-	local player = game.Players.LocalPlayer
-	local character = player.Character or player.CharacterAdded:Wait()
-	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-
-	if not humanoidRootPart then
-		warn("HumanoidRootPart not found!")
-		return
-	end
-
-	game:GetService("RunService").RenderStepped:Connect(function()
-		if cframeFlyEnabled then
-			local camera = workspace.CurrentCamera
-			local newPosition = humanoidRootPart.CFrame
-
-			if game.UserInputService:IsKeyDown(Enum.KeyCode.W) then
-				newPosition = newPosition + camera.CFrame.LookVector * (flySpeed / 100)
-			end
-			if game.UserInputService:IsKeyDown(Enum.KeyCode.S) then
-				newPosition = newPosition - camera.CFrame.LookVector * (flySpeed / 100)
-			end
-			if game.UserInputService:IsKeyDown(Enum.KeyCode.A) then
-				newPosition = newPosition - camera.CFrame.RightVector * (flySpeed / 100)
-			end
-			if game.UserInputService:IsKeyDown(Enum.KeyCode.D) then
-				newPosition = newPosition + camera.CFrame.RightVector * (flySpeed / 100)
-			end
-			if game.UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-				newPosition = newPosition + Vector3.new(0, flySpeed / 100, 0)
-			end
-			if game.UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
-				newPosition = newPosition - Vector3.new(0, flySpeed / 100, 0)
-			end
-
-			humanoidRootPart.CFrame = newPosition
-		end
-	end)
-end
-
-PlayerSection:NewToggle("Normal Fly", "Toggle normal flying mode.", function(state)
-	flyEnabled = state
-	if flyEnabled then
-		enableNormalFly()
-	end
-end)
-
-PlayerSection:NewToggle("CFrame Fly", "Toggle CFrame flying mode.", function(state)
-	cframeFlyEnabled = state
-	if cframeFlyEnabled then
-		enableCFrameFly()
-	end
-end)
-
-PlayerSection:NewSlider("Fly Speed", "Adjust fly speed.", 150, 10, function(value)
-	flySpeed = value
-end)
-
-
-PlayerSection:NewToggle("NoFallDamage", "Makes the player take no fall damage when falling.", function(state)
-	if state then
-		game:GetService("Players").LocalPlayer.Character.FallDamageRagdoll.Damage.Parent = game.ReplicatedStorage
-	else
-		game.ReplicatedStorage:WaitForChild("Damage").Parent = game:GetService("Players").LocalPlayer.Character.FallDamageRagdoll
-	end
-end)
-
-PlayerSection:NewToggle("NoJumpCooldown", "Disables jump cooldown.", function(state)
-	if state then
-		game:GetService("Players").LocalPlayer.PlayerGui.JumpDebounce.LocalScript.Disabled = true
-	else
-		game:GetService("Players").LocalPlayer.PlayerGui.JumpDebounce.LocalScript.Disabled = false
-	end
-end)
-
-
-PlayerSection:NewToggle("NoBob", "Disables camera bobbing.", function(state)
-	if state then
-		local player = game:GetService("Players").LocalPlayer
+	local function enableNormalFly()
+		local player = game.Players.LocalPlayer
 		local character = player.Character or player.CharacterAdded:Wait()
+		local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+
+		if not humanoidRootPart then
+			warn("HumanoidRootPart not found!")
+			return
+		end
+
+		local bodyVelocity = Instance.new("BodyVelocity", humanoidRootPart)
+		bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+		bodyVelocity.Velocity = Vector3.zero
+
+		local bodyGyro = Instance.new("BodyGyro", humanoidRootPart)
+		bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+
+		game:GetService("RunService").RenderStepped:Connect(function()
+			if flyEnabled then
+				local camera = workspace.CurrentCamera
+				local moveDirection = Vector3.new(0, 0, 0)
+
+				if game.UserInputService:IsKeyDown(Enum.KeyCode.W) then
+					moveDirection += camera.CFrame.LookVector
+				end
+				if game.UserInputService:IsKeyDown(Enum.KeyCode.S) then
+					moveDirection -= camera.CFrame.LookVector
+				end
+				if game.UserInputService:IsKeyDown(Enum.KeyCode.A) then
+					moveDirection -= camera.CFrame.RightVector
+				end
+				if game.UserInputService:IsKeyDown(Enum.KeyCode.D) then
+					moveDirection += camera.CFrame.RightVector
+				end
+				if game.UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+					moveDirection += Vector3.new(0, 1, 0)
+				end
+				if game.UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+					moveDirection -= Vector3.new(0, 1, 0)
+				end
+
+				bodyVelocity.Velocity = moveDirection.Unit * flySpeed
+				bodyGyro.CFrame = camera.CFrame
+			else
+				bodyVelocity:Destroy()
+				bodyGyro:Destroy()
+			end
+		end)
+	end
+
+	local function enableCFrameFly()
+		local player = game.Players.LocalPlayer
+		local character = player.Character or player.CharacterAdded:Wait()
+		local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+
+		if not humanoidRootPart then
+			warn("HumanoidRootPart not found!")
+			return
+		end
+
+		game:GetService("RunService").RenderStepped:Connect(function()
+			if cframeFlyEnabled then
+				local camera = workspace.CurrentCamera
+				local newPosition = humanoidRootPart.CFrame
+
+				if game.UserInputService:IsKeyDown(Enum.KeyCode.W) then
+					newPosition = newPosition + camera.CFrame.LookVector * (flySpeed / 100)
+				end
+				if game.UserInputService:IsKeyDown(Enum.KeyCode.S) then
+					newPosition = newPosition - camera.CFrame.LookVector * (flySpeed / 100)
+				end
+				if game.UserInputService:IsKeyDown(Enum.KeyCode.A) then
+					newPosition = newPosition - camera.CFrame.RightVector * (flySpeed / 100)
+				end
+				if game.UserInputService:IsKeyDown(Enum.KeyCode.D) then
+					newPosition = newPosition + camera.CFrame.RightVector * (flySpeed / 100)
+				end
+				if game.UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+					newPosition = newPosition + Vector3.new(0, flySpeed / 100, 0)
+				end
+				if game.UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+					newPosition = newPosition - Vector3.new(0, flySpeed / 100, 0)
+				end
+
+				humanoidRootPart.CFrame = newPosition
+			end
+		end)
+	end
+
+	FlyModesDropdown:OnChanged(function(value)
+		if value == "Normal Fly" then
+			flyEnabled = true
+			cframeFlyEnabled = false
+			enableNormalFly()
+		elseif value == "CFrame Fly" then
+			flyEnabled = false
+			cframeFlyEnabled = true
+			enableCFrameFly()
+		else
+			-- Disable all fly modes
+			flyEnabled = false
+			cframeFlyEnabled = false
+		end
+		print("Fly Mode changed to:", value)
+	end)
+
+	-- Add Fly Speed Slider
+	local FlySpeedSlider = Tabs.Main:AddSlider("FlySpeed", {
+		Title = "Fly Speed",
+		Description = "Adjust fly speed.",
+		Default = flySpeed,
+		Min = 10,
+		Max = 150,
+		Rounding = 0,
+		Callback = function(value)
+			flySpeed = value
+		end,
+	})
+	
+	local NoJumpCoolDownToggle = Tabs.Player:AddToggle("NoJumpCoolDown", {Title = "NoJumpCoolDown", Default = false })
+
+	NoJumpCoolDownToggle:OnChanged(function()
+		local toggleValue = Options.NoJumpCoolDown.Value
+
+		if (toggleValue) then
+			game:GetService("Players").LocalPlayer.PlayerGui.JumpDebounce.LocalScript.Disabled = true
+		else
+			game:GetService("Players").LocalPlayer.PlayerGui.JumpDebounce.LocalScript.Disabled = false
+		end
+	end)
+	
+	-- Game Category
+	
+	local LightingTechnologyDropdown = Tabs.Game:AddDropdown("LightingTechnology", {
+		Title = "Lighting Technology",
+		Values = {"Voxel", "Compatibility", "ShadowMap", "Future"},
+		Multi = false,
+		Default = Lighting.Technology.Name, -- Default value based on the current Lighting technology
+	})
+
+	LightingTechnologyDropdown:SetValue(Lighting.Technology.Name) -- Set initial dropdown value
+
+	LightingTechnologyDropdown:OnChanged(function(value)
+		-- Map the selected string value to the corresponding Enum
+		local newTechnology = Enum.Technology[value]
+		if newTechnology then
+			Lighting.Technology = newTechnology
+			print("Lighting Technology changed to:", value)
+		else
+			print("Invalid Lighting Technology selected!")
+		end
+	end)
+
+	local FullBrightToggle = Tabs.Game:AddToggle("FullBright", {Title = "FullBright", Default = false })
+
+	FullBrightToggle:OnChanged(function()
+		local toggleValue = Options.FullBright.Value
 		
-		character:WaitForChild("CameraBobbing").Disabled = true
-	else
-		local player = game:GetService("Players").LocalPlayer
-		local character = player.Character or player.CharacterAdded:Wait()
+		if toggleValue then
+			-- Store the current ambience if not already stored
+			previousAmbient = Lighting.Ambient
 
-		character:WaitForChild("CameraBobbing").Disabled = false
-	end
-end)
-
-PurchasingSection:NewDropdown("Buy", "DropdownInf", {"GrapeDrank", "Rice", "Seeds"}, function(currentOption)
-	local playerMoney = game:GetService("Players").LocalPlayer.stored.Money.Value -- Fetch the actual numeric value
-
-	if (currentOption == "GrapeDrank") then
-		if (playerMoney >= grapePrice) then
-			for i = 1, grapePurchaseCount do
-				local args = {
-					[1] = "GrapeDrank"
-				}
-
-				game:GetService("ReplicatedStorage"):WaitForChild("ExoticShopRemote"):InvokeServer(unpack(args))
-				wait(1)
-			end
+			-- Set ambience to white
+			Lighting.Ambient = Color3.new(1, 1, 1) -- White
+			Lighting.OutdoorAmbient = Color3.new(1, 1, 1) -- Optional for outdoor effects
 		else
-			createWarningGui("Not enough money to buy grape drank!")
+			-- Revert to the previous ambience
+			Lighting.Ambient = previousAmbient
+			Lighting.OutdoorAmbient = previousAmbient -- If you want consistency with outdoor settings
 		end
-	elseif (currentOption == "Rice") then
-		if ricePurchaseCount <= 0 then
-			warn("Set a value greater than 0 to buy rice.")
-			return
+	end)
+	
+	local BrightnessSlider = Tabs.Game:AddSlider("Brightness", {
+		Title = "Brightness",
+		Description = "Sets the game lighting brightness to the set value.",
+		Default = 2,
+		Min = 0,
+		Max = 10,
+		Rounding = 2,
+		Callback = function(Value)
+			Lighting.Brightness = Value
 		end
+	})
 
-		local player = game.Players.LocalPlayer
-		local character = player.Character
-		if not character or not character:FindFirstChild("HumanoidRootPart") then
-			warn("Character or HumanoidRootPart not found.")
-			return
+	local TimeOfDaySlider = Tabs.Game:AddSlider("TimeOfDay", {
+		Title = "TimeOfDay",
+		Description = "Sets the game time of day to the set value.",
+		Default = 2,
+		Min = 0,
+		Max = 10,
+		Rounding = 0,
+		Callback = function(Value)
+			Lighting.TimeOfDay = string.format("%02d:00:00", math.floor(Value))
 		end
+	})
+	
+	local RemoveShadowsToggle = Tabs.Game:AddToggle("RemoveShadows", {Title = "RemoveShadows", Default = false })
 
-		-- Only teleport if player has enough money
-		if playerMoney >= ricePrice then
-			local originalPosition = character.HumanoidRootPart.CFrame  -- Save the original position
-			character.HumanoidRootPart.CFrame = riceBuyLocation -- Teleport to rice buy location
-			
-			wait(0.25)
+	RemoveShadowsToggle:OnChanged(function()
+		local toggleValue = Options.RemoveShadows.Value
+		
+		if (toggleValue) then
+			game.Lighting.GlobalShadows = false
+		else
+			game.Lighting.GlobalShadows = true
+		end
+	end)
+	
+	local RemoveBlurToggle = Tabs.Game:AddToggle("RemoveBlur", {Title = "RemoveBlur", Default = false})
 
-			for i = 1, ricePurchaseCount do
-				if buyRicePrompt and buyRicePrompt:IsA("ProximityPrompt") then
-					local holdTime = buyRicePrompt.HoldDuration or 0
-					buyRicePrompt:InputHoldBegin()
-					if holdTime > 0 then
-						wait(holdTime + 1)
-					else
-						wait(3)
-					end
-					buyRicePrompt:InputHoldEnd()
-					wait(2)
-				else
-					warn("BuyPrompt not found or incorrect type.")
-					break
+	RemoveBlurToggle:OnChanged(function()
+		local toggleValue = Options.RemoveBlur.Value
+
+		if toggleValue then
+			-- Search and disable all BlurEffects in Lighting
+			for _, instance in pairs(game:GetService("Lighting"):GetDescendants()) do
+				if instance:IsA("BlurEffect") then
+					instance.Enabled = false
 				end
 			end
-
-			character.HumanoidRootPart.CFrame = originalPosition -- Return to original position
 		else
-			createWarningGui("Not enough money to buy rice!")
-		end
-	elseif (currentOption == "Seeds") then
-		if seedsPurchaseCount <= 0 then
-			warn("Set a value greater than 0 to buy seeds.")
-			return
-		end
-
-		local player = game.Players.LocalPlayer
-		local character = player.Character
-		if not character or not character:FindFirstChild("HumanoidRootPart") then
-			warn("Character or HumanoidRootPart not found.")
-			return
-		end
-
-		-- Only teleport if player has enough money
-		if playerMoney >= seedsPrice then
-			local originalPosition = character.HumanoidRootPart.CFrame  -- Save the original position
-			character.HumanoidRootPart.CFrame = seedsBuyLocation -- Teleport to seeds buy location
-			
-			wait(0.25)
-
-			for i = 1, seedsPurchaseCount do
-				if buySeedsPrompt and buySeedsPrompt:IsA("ProximityPrompt") then
-					local holdTime = buySeedsPrompt.HoldDuration or 0
-					buySeedsPrompt:InputHoldBegin()
-					if holdTime > 0 then
-						wait(holdTime + 1)
-					else
-						wait(3)
-					end
-					buySeedsPrompt:InputHoldEnd()
-					wait(2)
-				else
-					warn("BuyPrompt not found or incorrect type.")
-					break
+			-- Optionally re-enable blur effects if needed
+			for _, instance in pairs(game:GetService("Lighting"):GetDescendants()) do
+				if instance:IsA("BlurEffect") then
+					instance.Enabled = true
 				end
 			end
-
-			character.HumanoidRootPart.CFrame = originalPosition -- Return to original position
-		else
-			createWarningGui("Not enough money to buy seeds!")
 		end
-	end
-end)
+	end)
+	
+	-- Teleport Category
 
-PurchasingSection:NewSlider("GrapeQuantity", "Select how many times to buy grape dranks", maxBuyValue, minBuyValue, function(sliderValue)
-	grapePurchaseCount = sliderValue
-end)
+	-- Predefined Teleport Locations
+	local teleportLocations = {
+		-- Guns Shop 1
+		{Name = "Guns Shop 1", Position = CFrame.new(92968.8047, 122097.961, 17023.4434)},
 
-PurchasingSection:NewSlider("RiceQuantity", "Select how many times to buy rice", maxBuyValue, minBuyValue, function(sliderValue)
-	ricePurchaseCount = sliderValue
-end)
+		-- Guns Shop 2
+		{Name = "Guns Shop 2", Position = CFrame.new(66202, 123616, 5750)},
+		
+		-- Exotic Guns
+		{Name = "Exotic Guns", Position = CFrame.new(60837, 87609, -350)}
+	}
 
-PurchasingSection:NewSlider("SeedsQuantity", "Select how many times to buy seeds", maxBuyValue, minBuyValue, function(sliderValue)
-	seedsPurchaseCount = sliderValue
-end)
-
-UtilitySection:NewDropdown("Teleports", "Select a location to teleport", {
-	"Guns Shop 1", "Guns Shop 2", "Guns Shop 3 (Exotic Guns)", "Hotel Hall", "Laundry", 
-	"Rice Purchaser", "Exotic Dealer", "Bank", "Weed Purchaser"
-}, function(selected)
-	for _, location in ipairs(teleportLocations) do
-		if location.name == selected then
-			local player = game.Players.LocalPlayer
-			if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-				player.Character.HumanoidRootPart.CFrame = CFrame.new(location.position)
+	-- Create a button for each teleport location
+	for _, location in pairs(teleportLocations) do
+		Tabs.Teleport:AddButton({
+			Title = "Teleport to " .. location.Name,
+			Description = "Click to teleport to " .. location.Name,
+			Callback = function()
+				-- Teleport the player to the selected location's Position
+				local Character = game:GetService("Players").LocalPlayer.Character
+				local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+				HumanoidRootPart.CFrame = location.Position
+				print("Teleported to:", location.Name)
 			end
-			break
-		end
+		})
 	end
-end)
-
-MoneySection:NewButton("Rob 'On The Radar' Studio", "Automatically robs 'On The Radar' studio.", function()
-	local player = game:GetService("Players").LocalPlayer
-	local character = player.Character or player.CharacterAdded:Wait()
-
-	-- Store the player's original position before teleporting anywhere
-	local originalPosition = character.HumanoidRootPart.CFrame
-
-	-- Function to teleport the player to a random mesh inside the StudioPay model and trigger the prompt
-	local function robStudioPay(modelName)
-		local moneyFolder = workspace:WaitForChild("StudioPay"):WaitForChild("Money")
-		local model = moneyFolder:WaitForChild(modelName)
-		local meshes = model:GetChildren()
-		local promptFound = false
-
-		-- Loop through all meshes inside the model
-		for _, mesh in ipairs(meshes) do
-			if mesh:IsA("MeshPart") or mesh:IsA("Model") then
-				local meshParts = mesh:GetChildren()
-
-				-- Check for a ProximityPrompt inside the mesh
-				for _, part in ipairs(meshParts) do
-					if part:IsA("ProximityPrompt") then
-						-- Check if the prompt is enabled before proceeding
-						if part.Enabled then
-							-- Set the duration to 0 to trigger it immediately
-							part.HoldDuration = 0
-							
-							-- Ensure the player is close to the prompt
-							local targetPosition = part.Parent.CFrame.Position
-							character:SetPrimaryPartCFrame(CFrame.new(targetPosition))
-
-							wait(0.25) -- Give it a small delay to ensure the player has time to move to the prompt
-
-							-- Trigger the ProximityPrompt
-							local prompt = part.Parent:FindFirstChildOfClass("ProximityPrompt")
-							if prompt then
-								-- Simulate holding the prompt to trigger the action
-								prompt:InputHoldBegin()
-								wait(0.02) -- Hold for a brief moment before ending the action
-								prompt:InputHoldEnd()
-								wait(0.01)
-								-- Simulate holding the prompt to trigger the action
-								prompt:InputHoldBegin()
-								wait(0.01) -- Hold for a brief moment before ending the action
-								prompt:InputHoldEnd()
-								wait(0.2)
-								promptFound = true
-							end
-						else
-							createWarningGui("This has already been stealed by you or someone else.")
+	
+	function dupeItem()
+		local tool = Character:FindFirstChildOfClass("Tool")
+		if not tool then
+			Window:Dialog({
+				Title = "Error",
+				Content = "You have no item equipped, please equip one to duplicate it.",
+				Buttons = {
+					{
+						Title = "Confirm",
+						Callback = function()
 						end
+					}
+				}
+			})
+			return
+		end
+		
+		-- Check if the tool name is "Phone" or "Fist"
+		if tool.Name == "Phone" or tool.Name == "Fist" then
+			Window:Dialog({
+				Title = "Tool Detected",
+				Content = "You cannot clone this item: " .. tool.Name .. ". Choose another one.",
+				Buttons = {
+					{
+						Title = "Confirm",
+						Callback = function()
+						end
+					}
+				}
+			})
+			return
+		end
+		
+		-- Save the current position
+		local originalPosition = Character.PrimaryPart and Character.PrimaryPart.CFrame or nil
 
-						break
-					end
-				end
+		-- Get the safes
+		local safesContainer = workspace:WaitForChild("1# Map"):WaitForChild("2 Crosswalks"):WaitForChild("Safes")
+		local safes = safesContainer:GetChildren()
+
+		-- Ensure there are safes available
+		if #safes > 0 then
+			-- Choose a random safe
+			local randomSafe = safes[math.random(1, #safes)]
+
+			Player.Character.Humanoid:UnequipTools()
+			-- Teleport the player to the random safe's position
+			Character:SetPrimaryPartCFrame(randomSafe.ChestClicker.CFrame)
+			
+			wait(0.25)
+
+			-- Send the current item to the safe
+			local argsTrue = {
+				[1] = "Change",
+				[2] = tool.Name,  -- Using the equipped tool's name
+				[3] = "Backpack",
+				[4] = randomSafe -- Send to the safe
+			}
+			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrue))
+			
+			wait(0.01)
+			
+			local inv = game.Players.LocalPlayer.InvData
+			for i = 1, 100 do
+				local clone = Instance.new("IntValue")
+				clone.Name = "FakeItem"
+				clone.Parent = inv
+				clone:Destroy()
 			end
-			if promptFound then break end
+			
+			--local invData = Instance.new(IntValue)
+			
+			wait(1)
+			
+			-- Send the current item to the safe
+			local argsTrueX = {
+				[1] = "Change",
+				[2] = tool.Name,  -- Using the equipped tool's name
+				[3] = "Inv",
+				[4] = randomSafe -- Send to the safe
+			}
+			game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(argsTrueX))
+
+			wait(1)
+			
+			Character:SetPrimaryPartCFrame(originalPosition)
 		end
 	end
+	
+	-- Exploit Category
+	
+	Tabs.Exploit:AddButton({
+		Title = "DupeItem",
+		Description = "Duplicates the current item you are holding.",
+		Callback = function()
+			Window:Dialog({
+				Title = "Confirmation",
+				Content = "Are you sure to duplicate this item?",
+				Buttons = {
+					{
+						Title = "Confirm",
+						Callback = function()
+							dupeItem()
+						end
+					},
+					{
+						Title = "Cancel",
+						Callback = function()
+						end
+					}
+				}
+			})
+		end
+	})
 
-	-- Rob all three models
-	robStudioPay("StudioPay1")
-	robStudioPay("StudioPay2")
-	robStudioPay("StudioPay3")
+	Tabs.Exploit:AddButton({
+		Title = "Alert Disabler",
+		Description = "The game secretly sends alerts when you use known exploits, this disables them.",
+		Callback = function()
+			Window:Dialog({
+				Title = "Confirmation",
+				Content = "Are you sure to disable it?",
+				Buttons = {
+					{
+						Title = "Confirm",
+						Callback = function()
+							Character:WaitForChild("abcde"):Destroy()
+						end
+					},
+					{
+						Title = "Cancel",
+						Callback = function()
+						end
+					}
+				}
+			})
+		end
+	})
 
-	-- After robbing all, teleport the player back to their original position
-	wait(0.25)  -- Wait a little to ensure everything has completed
-	character.HumanoidRootPart.CFrame = originalPosition
-end)
-
-ExploitSection:NewButton("Dupe Item", "Dupe Items", function()
-	local player = game:GetService("Players").LocalPlayer
-	local character = player.Character or player.CharacterAdded:Wait()
-	local tool = character:FindFirstChildOfClass("Tool")
-	if not tool then
-		createWarningGui("No tool is currently equipped.")
-		return
-	end
-
-	-- Save the current position
-	local originalPosition = character.PrimaryPart and character.PrimaryPart.CFrame or nil
-
-	-- Get the safes
-	local safesContainer = workspace:WaitForChild("1# Map"):WaitForChild("2 Crosswalks"):WaitForChild("Safes")
-	local safes = safesContainer:GetChildren()
-
-	-- Ensure there are safes available
-	if #safes > 0 then
-		-- Choose a random safe
-		local randomSafe = safes[math.random(1, #safes)]
-
-		player.Character.Humanoid:UnequipTools()
-		-- Teleport the player to the random safe's position
-		character:SetPrimaryPartCFrame(randomSafe.ChestClicker.CFrame)
-		
-		local args = {
-			[1] = "Change",
-			[2] = tool.Name,
-			[3] = "Backpack",
-			[4] = randomSafe
-		}
-
-		game:GetService("ReplicatedStorage"):WaitForChild("Inventory"):FireServer(unpack(args))
-		
-		wait(2)
-		
-	end
-end)
-
-ExploitSection:NewButton("NoMoneyLimit (BETA)", "No Description.", function()
-	game.Players.LocalPlayer:SetAttribute("MaxMoney", math.huge)
-end)
-
-ExploitSection:NewToggle("SilentAcDisabler", "Disables the silent ac.", function(state)
-	if state then
-		local player = game:GetService("Players").LocalPlayer
-		local character = player.Character or player.CharacterAdded:Wait()
-		
-		character:WaitForChild("abcde").Disabled = true
-	else
-		local player = game:GetService("Players").LocalPlayer
-		local character = player.Character or player.CharacterAdded:Wait()
-
-		character:WaitForChild("abcde").Disabled = false
-	end
-end)
+	--Options.MyToggle:SetValue(false)
+end
 
 
+-- Addons:
+-- SaveManager (Allows you to have a configuration system)
+-- InterfaceManager (Allows you to have a interface managment system)
 
+-- Hand the library over to our managers
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+
+-- Ignore keys that are used by ThemeManager.
+-- (we dont want configs to save themes, do we?)
+SaveManager:IgnoreThemeSettings()
+
+-- You can add indexes of elements the save manager should ignore
+SaveManager:SetIgnoreIndexes({})
+
+-- use case for doing it this way:
+-- a script hub could have themes in a global folder
+-- and game configs in a separate folder per game
+InterfaceManager:SetFolder("FluentScriptHub")
+SaveManager:SetFolder("FluentScriptHub/specific-game")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+
+Window:SelectTab(1)
+
+Fluent:Notify({
+	Title = "Fluent",
+	Content = "The script has been loaded.",
+	Duration = 8
+})
+
+-- You can use the SaveManager:LoadAutoloadConfig() to load a config
+-- which has been marked to be one that auto loads!
+SaveManager:LoadAutoloadConfig()
