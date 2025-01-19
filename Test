@@ -86,106 +86,110 @@ do
 		end
 	end)
 	
+	-- Utility function to find a ModuleScript within the player's character
+	local function findModuleScriptInCharacter(character, moduleName)
+		for _, descendant in ipairs(character:GetDescendants()) do
+			if descendant:IsA("ModuleScript") and descendant.Name == moduleName then
+				return descendant
+			end
+		end
+		return nil -- Return nil if not found
+	end
+
+	-- Function to handle infinite ammo modification
+	local function setInfiniteAmmo()
+		local Players = game:GetService("Players")
+		local localPlayer = Players.LocalPlayer
+
+		if localPlayer then
+			local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+			local settingModule = findModuleScriptInCharacter(character, "Setting")
+
+			if settingModule then
+				local success, settings = pcall(require, settingModule)
+				if success and settings then
+					settings.LimitedAmmoEnabled = false
+					settings.AmmoPerMag = 9000000000
+					settings.Ammo = 9000000000
+					settings.MaxAmmo = 9000000000
+					print("Infinite ammo enabled.")
+				else
+					warn("Failed to load settings module or invalid structure.")
+				end
+			else
+				warn("'Setting' ModuleScript not found in the character.")
+			end
+		else
+			warn("LocalPlayer not found.")
+		end
+	end
+
+	-- Function to handle rapid fire modification
+	local function setRapidFire()
+		local Players = game:GetService("Players")
+		local localPlayer = Players.LocalPlayer
+
+		if localPlayer then
+			local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+			local settingModule = findModuleScriptInCharacter(character, "Setting")
+
+			if settingModule then
+				local success, settings = pcall(require, settingModule)
+				if success and settings then
+					settings.FireRate = 1 / 1000000
+					settings.Auto = true
+					print("Rapid fire enabled.")
+				else
+					warn("Failed to load settings module or invalid structure.")
+				end
+			else
+				warn("'Setting' ModuleScript not found in the character.")
+			end
+		else
+			warn("LocalPlayer not found.")
+		end
+	end
+
+	-- Add UI buttons
 	Tabs.Guns:AddButton({
 		Title = "Infinite Ammo",
 		Description = "Sets your current gun ammo to infinite.",
 		Callback = function()
 			Window:Dialog({
 				Title = "Confirm Action",
-				Content = "Are you sure to set your current gun with infinite ammo?",
+				Content = "Are you sure you want to set your current gun to have infinite ammo?",
 				Buttons = {
 					{
 						Title = "Confirm",
-						Callback = function()
-							local function findModuleScriptInCharacter(character, moduleName)
-								for _, descendant in ipairs(character:GetDescendants()) do
-									if descendant:IsA("ModuleScript") and descendant.Name == moduleName then
-										return descendant
-									end
-								end
-								return nil  -- Return nil if not found
-							end
-
-							local Players = game:GetService("Players")
-							local Workspace = game:GetService("Workspace")
-
-							local localPlayer = Players.LocalPlayer  -- Get the local player
-							if localPlayer then
-								local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()  -- Wait if character not yet loaded
-								local settingModule = findModuleScriptInCharacter(character, "Setting")
-								local gun = settingModule  -- Assigning the found moduleScript to 'gun'
-
-								if settingModule then
-									local settings = require(gun)  -- Require the module script
-									settings.LimitedAmmoEnabled = false
-									settings.AmmoPerMag = 9000000000
-									settings.Ammo = 9000000000
-									settings.MaxAmmo = 9000000000
-								else
-									warn("'Setting' ModuleScript not found in the character.")
-								end
-							else
-								warn("LocalPlayer not found.")
-							end
-						end
+						Callback = setInfiniteAmmo
 					},
 					{
 						Title = "Cancel",
 						Callback = function()
-							print("Cancelled the dialog.")
+							print("Cancelled the infinite ammo action.")
 						end
 					}
 				}
 			})
 		end
 	})
-	
+
 	Tabs.Guns:AddButton({
 		Title = "Rapid Fire",
-		Description = "Makes your current gun fast as fuck.",
+		Description = "Makes your current gun fire very fast.",
 		Callback = function()
 			Window:Dialog({
 				Title = "Confirm Action",
-				Content = "Are you sure to make your gun fast?",
+				Content = "Are you sure you want to make your gun fire rapidly?",
 				Buttons = {
 					{
 						Title = "Confirm",
-						Callback = function()
-							local function findModuleScriptInCharacter(character, moduleName)
-								for _, descendant in ipairs(character:GetDescendants()) do
-									if descendant:IsA("ModuleScript") and descendant.Name == moduleName then
-										return descendant
-									end
-								end
-								return nil  -- Return nil if not found
-							end
-
-							-- Main execution
-							local Players = game:GetService("Players")
-							local Workspace = game:GetService("Workspace")
-
-							local localPlayer = Players.LocalPlayer  -- Get the local player
-							if localPlayer then
-								local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()  -- Wait if character not yet loaded
-								local settingModule = findModuleScriptInCharacter(character, "Setting")
-								local gun = settingModule  -- Assigning the found moduleScript to 'gun'
-
-								if settingModule then
-									local settings = require(gun)  -- Require the module script
-									settings.FireRate = 1 / 1000000
-									settings.Auto = true
-								else
-									warn("'Setting' ModuleScript not found in the character.")
-								end
-							else
-								warn("LocalPlayer not found.")
-							end
-						end
+						Callback = setRapidFire
 					},
 					{
 						Title = "Cancel",
 						Callback = function()
-							print("Cancelled the dialog.")
+							print("Cancelled the rapid fire action.")
 						end
 					}
 				}
